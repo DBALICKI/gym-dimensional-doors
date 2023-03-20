@@ -1,0 +1,6 @@
+[flake8]
+exclude = .git,.tox,__pycache__,.eggs,build
+max-line-length = 88
+per-file-ignores =
+    __init__.py:F401
+doctests = true
