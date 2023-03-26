@@ -1,3 +1,4 @@
+import random
 from typing import Optional
 
 import gym
@@ -32,8 +33,9 @@ class DoorsEnv(gym.Env):
         self.state = np.zeros((3,), dtype=np.float32)
         if self.current_stage != self.num_stages:
             self.state[0] = 0.1 * self.task1_path[self.current_stage]
-            self.state[1] = 0.3 * self.task2_path[self.current_stage]
-            self.state[2] = 0.7 * self.task2_path[self.current_stage]
+            nonce = random.random()
+            self.state[1] = nonce
+            self.state[2] = nonce * self.task2_path[self.current_stage]
         return self.state
 
     def step(self, action: int):
