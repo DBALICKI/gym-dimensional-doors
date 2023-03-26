@@ -11,7 +11,7 @@ class DoorsEnv(gym.Env):
         self.num_stages = num_stages
 
         self.action_space = gym.spaces.Discrete(self.num_doors)
-        self.observation_space = gym.spaces.Box(0, np.inf, dtype=np.float64)
+        self.observation_space = gym.spaces.Box(0, np.inf, shape=(3,), dtype=np.float32)
 
         self.task0_path = None
         self.task1_path = None
@@ -29,15 +29,16 @@ class DoorsEnv(gym.Env):
         return [seed]
 
     def get_state(self) -> np.ndarray:
-        self.state = np.zeros((3,))
-        self.state[0] = 0.1 * self.task1_path[self.current_stage]
-        self.state[1] = 0.3 * self.task2_path[self.current_stage]
-        self.state[2] = 0.7 * self.task2_path[self.current_stage]
+        self.state = np.zeros((3,), dtype=np.float32)
+        if self.current_stage != self.num_stages:
+            self.state[0] = 0.1 * self.task1_path[self.current_stage]
+            self.state[1] = 0.3 * self.task2_path[self.current_stage]
+            self.state[2] = 0.7 * self.task2_path[self.current_stage]
         return self.state
 
     def step(self, action: int):
         if self.done:
-            raise RuntimeError
+            raise RuntimeError("Episode already done")
         self.current_path.append(action)
         self.current_stage += 1
         reward = 0.0
@@ -50,16 +51,14 @@ class DoorsEnv(gym.Env):
                 reward += 1.0
             if (self.task2_path == current_path).all():
                 reward += 10.0
-            self.state = np.zeros((3,))
-        else:
-            self.state = self.get_state()
+        self.state = self.get_state()
         info = {}
         return self.state, reward, self.done, info
 
     def reset(self):
         self.current_path = []
         self.current_stage = 0
-        self.task0_path = np.zeros((self.num_stages,))
+        self.task0_path = np.zeros((self.num_stages,), dtype=int)
         self.task1_path = self.np_random.integers(
             0, self.num_doors, size=(self.num_stages,)
         )
